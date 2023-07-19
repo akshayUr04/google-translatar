@@ -16,23 +16,23 @@ const (
 )
 
 func Translate(obj model.Translate) ([]byte, error) {
-	str2 := ""
-	str2 = str2 + "q=" + obj.Text
-	str2 = str2 + "&target=" + obj.TragetLanguage
-	str2 = str2 + "&source=" + obj.SourceLanguage
+	str := ""
+	str = str + "q=" + obj.Text
+	str = str + "&target=" + obj.TragetLanguage
+	str = str + "&source=" + obj.SourceLanguage
 
-	fmt.Println("str2-------", str2)
+	fmt.Println("str-------", str)
 
-	payload := strings.NewReader(str2)
+	payload := strings.NewReader(str) //the string is converted into strings.Reader type which implements the io.Reader interface
 
 	req, err := http.NewRequest(http.MethodPost, TranslateURL, payload)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	req.Header.Add("content-type", "application/x-www-form-urlencoded")
-	req.Header.Add("Accept-Encoding", "application/gzip")
-	req.Header.Add("X-RapidAPI-Key", os.Getenv("GOOGLE_API_KEY")) //api key
+	req.Header.Add("content-type", "application/x-www-form-urlencoded") // headers are additional information sent with the
+	req.Header.Add("Accept-Encoding", "application/gzip")               // request to provide metadata about the request or to
+	req.Header.Add("X-RapidAPI-Key", os.Getenv("GOOGLE_API_KEY"))       //specify certain requirements for the server.
 	req.Header.Add("X-RapidAPI-Host", "google-translate1.p.rapidapi.com")
 
 	res, err := http.DefaultClient.Do(req)
