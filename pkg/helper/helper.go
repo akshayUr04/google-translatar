@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -15,19 +16,25 @@ const (
 	TranslateURL = "https://google-translate1.p.rapidapi.com/language/translate/v2"
 )
 
-func Translate(obj model.Translate) ([]byte, error) {
+type TranslationResponse struct {
+	Data struct {
+		Translations []struct {
+			TranslatedText string `json:"translatedText"`
+		} `json:"translations"`
+	} `json:"data"`
+}
+
+func Translate(obj model.Translate) (string, error) {
 	str := ""
 	str = str + "q=" + obj.Text
 	str = str + "&target=" + obj.TragetLanguage
 	str = str + "&source=" + obj.SourceLanguage
 
-	fmt.Println("str-------", str)
-
 	payload := strings.NewReader(str) //the string is converted into strings.Reader type which implements the io.Reader interface
 
 	req, err := http.NewRequest(http.MethodPost, TranslateURL, payload)
 	if err != nil {
-		return []byte{}, err
+		return "", err
 	}
 
 	req.Header.Add("content-type", "application/x-www-form-urlencoded") // headers are additional information sent with the
@@ -37,13 +44,29 @@ func Translate(obj model.Translate) ([]byte, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return []byte{}, err
+		return "", err
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return []byte{}, err
+		return "", err
 	}
-	return body, nil
+
+	// Parse the JSON response
+	var translationResponse TranslationResponse
+	err = json.Unmarshal(body, &translationResponse)
+	if err != nil {
+		return "", err
+	}
+
+	// Extract the translated text
+	if len(translationResponse.Data.Translations) > 0 {
+		translatedText := translationResponse.Data.Translations[0].TranslatedText
+		return translatedText, nil
+	}
+
+	return "", fmt.Errorf("no translated text found in the response")
+
+	// return body, nil
 }

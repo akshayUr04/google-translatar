@@ -24,6 +24,12 @@ func Translate(c *gin.Context) {
 		})
 		return
 	}
+	// var respdata byte
+	// for _, val := range resp {
+	// 	if string(val) == "translatedText" {
+	// 		respdata = val
+	// 	}
+	// }
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Success",
 		"data":    string(resp),
